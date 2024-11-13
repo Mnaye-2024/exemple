@@ -1,18 +1,18 @@
-package dette.boutique.core.database.impl;
+package dette.boutique.core.repository.impl;
 
 import java.util.List;
 
-import dette.boutique.core.database.Repository;
+import dette.boutique.core.repository.Repository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 
-public class RepositoryJpaImpl<T> implements Repository<T> {
+public class RepositoryPostgreImpl<T> implements Repository<T> {
     protected EntityManager em;
     protected EntityManagerFactory emf = Persistence.createEntityManagerFactory("MySqlBi");
     protected Class<T> type;
 
-    public RepositoryJpaImpl(EntityManager em, Class<T> type) {
+    public RepositoryPostgreImpl(EntityManager em, Class<T> type) {
         this.type = type;
         if (em == null) {
             this.em = emf.createEntityManager();
@@ -41,6 +41,18 @@ public class RepositoryJpaImpl<T> implements Repository<T> {
     public List<T> selectAll() {
         String entityName = type.getSimpleName();
         return this.em.createQuery("SELECT u FROM " + entityName + " u", type).getResultList();
+    }
+
+    @Override
+    public T selectById(int id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'selectById'");
+    }
+
+    @Override
+    public void remove(T element) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'remove'");
     }
 
 }

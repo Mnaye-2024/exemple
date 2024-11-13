@@ -6,13 +6,22 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import dette.boutique.core.database.impl.RepositoryDbImpl;
+import dette.boutique.core.repository.impl.RepositoryDbImpl;
 import dette.boutique.data.entities.Client;
 import dette.boutique.data.entities.Role;
 import dette.boutique.data.entities.User;
+import dette.boutique.data.repository.RoleRepository;
 import dette.boutique.data.repository.UserRepository;
 
 public class UserRepositoryDbImpl extends RepositoryDbImpl<User> implements UserRepository {
+    RoleRepository roleRepository;
+
+    public UserRepositoryDbImpl(RoleRepository roleRepository) {
+        this.roleRepository = roleRepository;
+    }
+    public UserRepositoryDbImpl(){
+        
+    }
 
     private static final String INSERT_QUERY = "INSERT INTO user (nom, prenom, login, password, client_id, role_id) VALUES (?, ?, ?, ?, ?, ?)";
     // private static final String INSERT_WITHOUT_USER_QUERY = "INSERT INTO user
@@ -112,15 +121,13 @@ public class UserRepositoryDbImpl extends RepositoryDbImpl<User> implements User
     @Override
     public User convertToObject(ResultSet resultSet) throws SQLException {
         int userId = resultSet.getInt("user_id");
-        String nomUser = resultSet.getString("user_nom");
-        String prenomUser = resultSet.getString("user_prenom");
         String loginUser = resultSet.getString("user_login");
         String passwordUser = resultSet.getString("user_password");
         String roleNom = resultSet.getString("role_nom");
 
-        Role role = roleNom != null ? Role.findRoleByName(roleNom) : null;
+        Role role = roleNom != null ? roleRepository.findRoleByName(roleNom) : null;
 
-        User user = new User(userId, nomUser, prenomUser, loginUser, passwordUser, role);
+        User user = new User(userId, loginUser, passwordUser, role);
 
         int clientId = resultSet.getInt("client_id");
         if (!resultSet.wasNull()) {
@@ -138,30 +145,19 @@ public class UserRepositoryDbImpl extends RepositoryDbImpl<User> implements User
 
     @Override
     public void setFields(PreparedStatement ps, User element) throws SQLException {
-        if (element.getNom() != null) {
-            ps.setString(1, element.getNom());
-        } else {
-            ps.setNull(1, java.sql.Types.VARCHAR);
-        }
-    
-        if (element.getPrenom() != null) {
-            ps.setString(2, element.getPrenom());
-        } else {
-            ps.setNull(2, java.sql.Types.VARCHAR);
-        }
-    
+
         ps.setString(3, element.getLogin());
         ps.setString(4, element.getPassword());
-    
+
         if (element.getClient() != null) {
             ps.setInt(5, element.getClient().getId());
         } else {
             ps.setNull(5, java.sql.Types.INTEGER);
         }
-    
+
         ps.setInt(6, element.getRole().getId());
     }
-    
+
     @Override
     public User selectById(int id) {
         throw new UnsupportedOperationException("Unimplemented method 'selectById'");
@@ -177,6 +173,12 @@ public class UserRepositoryDbImpl extends RepositoryDbImpl<User> implements User
     public String generateSql(User element) {
         // Méthode non implémentée
         throw new UnsupportedOperationException("Unimplemented method 'generateSql'");
+    }
+
+    @Override
+    public void remove(User element) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'remove'");
     }
 
 }

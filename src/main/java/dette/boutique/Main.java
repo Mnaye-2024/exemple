@@ -6,20 +6,26 @@ import java.util.Scanner;
 
 import dette.boutique.Views.ArticleView;
 import dette.boutique.Views.ClientView;
+import dette.boutique.Views.RoleView;
 import dette.boutique.Views.UserView;
-import dette.boutique.core.factory.Factory;
+import dette.boutique.core.services.EntityManagerCreator;
+import dette.boutique.core.services.RepositoryFactory;
+import dette.boutique.core.services.YamlService;
+import dette.boutique.core.services.impl.YamlServiceImpl;
+import dette.boutique.data.entities.Article;
 import dette.boutique.data.entities.Client;
+import dette.boutique.data.entities.Dette;
 import dette.boutique.data.entities.Role;
 import dette.boutique.data.entities.User;
 import dette.boutique.data.repository.ArticleRepository;
 import dette.boutique.data.repository.ClientRepository;
 import dette.boutique.data.repository.DetteRepository;
+import dette.boutique.data.repository.RoleRepository;
 import dette.boutique.data.repository.UserRepository;
-import dette.boutique.data.repository.bdImpl.ArticleRepositoryDbImpl;
-import dette.boutique.data.repository.listImpl.DetteRepositoryListImpl;
 import dette.boutique.services.ArticleService;
 import dette.boutique.services.ClientService;
 import dette.boutique.services.DetteService;
+import dette.boutique.services.RoleService;
 import dette.boutique.services.UserService;
 
 public class Main {
@@ -30,20 +36,45 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        ArticleRepository articleRepository = new ArticleRepositoryDbImpl();
-        UserRepository userRepository = Factory.getinstanceUserRepository();
-        DetteRepository detteRepository = new DetteRepositoryListImpl();
-        ClientRepository clientRepository = Factory.getinstanceClientRepository(userRepository);
+        YamlService yamlService = new YamlServiceImpl();
 
+        // Création de l'EntityManager ou de la liste selon la persistance
+        EntityManagerCreator entityManagerCreator = new EntityManagerCreator(yamlService);
+        Object persistenceHandler = entityManagerCreator.createEntityManagerFactory();
+        String persistence = entityManagerCreator.getPersistenceName();
+
+        // Repositories yi
+        RepositoryFactory<User> userRepositoryFactory = new RepositoryFactory<>(persistenceHandler);
+        UserRepository userRepository = (UserRepository) userRepositoryFactory.create(persistence, User.class);
+
+        RepositoryFactory<Role> roleRepositoryFactory = new RepositoryFactory<>(persistenceHandler);
+        RoleRepository roleRepository = (RoleRepository) roleRepositoryFactory.create(persistence, Role.class);
+
+        RepositoryFactory<Client> clientRepositoryFactory = new RepositoryFactory<>(persistenceHandler);
+        ClientRepository clientRepository = (ClientRepository) clientRepositoryFactory.create(persistence,
+                Client.class);
+
+        RepositoryFactory<Article> articleRepositoryFactory = new RepositoryFactory<>(persistenceHandler);
+        ArticleRepository articleRepository = (ArticleRepository) articleRepositoryFactory.create(persistence,
+                Article.class);
+
+        RepositoryFactory<Dette> detteRepositoryFactory = new RepositoryFactory<>(persistenceHandler);
+        DetteRepository detteRepository = (DetteRepository) detteRepositoryFactory.create(persistence, Dette.class);
+
+        // Servies yi
         ArticleService articleService = new ArticleService(articleRepository);
         UserService userService = new UserService(userRepository);
         ClientService clientService = new ClientService(clientRepository);
+        RoleService roleService = new RoleService(roleRepository);
         DetteService detteService = new DetteService(detteRepository, articleService, clientService);
 
+        // Views yi
         ArticleView articleView = new ArticleView(articleService);
         ClientView clientView = new ClientView(clientService);
         UserView userView = new UserView(userService);
-        Role role = Role.CLIENT;
+        RoleView roleView = new RoleView(roleService);
+
+        Role role = null;
         boolean continuer = true;
 
         while (continuer) {
@@ -55,50 +86,47 @@ public class Main {
             int choix = userView.obtenirChoixUtilisateur(1, 3);
 
             try {
-                scanner.nextLine();
-
                 switch (choix) {
-                    case 1:
+                    case 1 -> {
                         System.out.println("------Menu Client------");
                         clientView.menuClient();
-                        break;
+                    }
 
-                    case 2:
+                    case 2 -> {
                         boolean continuerMenuUser = true;
                         while (continuerMenuUser) {
                             System.out.println("------Menu utilisateur------");
                             userView.menu();
                             int choixUser = userView.obtenirChoixUtilisateur(1, 5);
                             switch (choixUser) {
-                                case 1:
+                                case 1 -> {
                                     String login1 = userView.saisieLogin();
                                     String password1 = userView.saisiePassword();
-                                    Role role1 = role.choisirRole();
+                                    Role role1 = roleView.choisirRole();
                                     User user1 = new User(login1, password1, role1);
                                     userService.create(user1);
                                     System.out.println("Utilisateur créé avec succès!");
-                                    break;
-
-                                case 2:
-                                    Client clientAffilié = clientView.choisirCLient();
-                                    if (clientAffilié != null) {
-                                        String nom = clientAffilié.getNom();
-                                        String prenom = clientAffilié.getPrenom();
+                                }
+                                case 2 -> {
+                                    Client clientAffilie = clientView.choisirCLient();
+                                    if (clientAffilie != null) {
+                                        String nom = clientAffilie.getNom();
+                                        String prenom = clientAffilie.getPrenom();
                                         String login = userView.saisieLogin();
                                         String password = userView.saisiePassword();
                                         Role roleUser = new Role();
                                         roleUser.setNom("CLIENT");
 
-                                        User user = new User(nom, prenom, login, password, clientAffilié, roleUser);
+                                        User user = new User(login, password, clientAffilie, roleUser);
                                         userService.create(user);
-                                        clientAffilié.setUser(user);
+                                        clientAffilie.setUser(user);
                                         System.out.println("Utilisateur créé avec succès!");
                                     } else {
                                         System.out.println("Aucun client n'est disponible.");
                                     }
-                                    break;
+                                }
 
-                                case 3:
+                                case 3 -> {
                                     User userA = userView.choisirUser();
                                     if (userA != null) {
                                         Client clientA = clientView.choisirCLient();
@@ -112,33 +140,29 @@ public class Main {
                                             System.out.println("Aucun client sélectionné.");
                                         }
                                     }
-                                    break;
+                                }
 
-                                case 4:
+                                case 4 -> {
                                     List<User> users = userService.list();
                                     userService.afficherListeUsers(users);
-                                    break;
+                                }
 
-                                case 5:
+                                case 5 -> {
                                     continuerMenuUser = false;
                                     System.out.println("Sortie du menu Utilisateur.");
-                                    break;
+                                }
 
-                                default:
-                                    System.out.println("Option invalide.");
-                                    break;
+                                default -> System.out.println("Option invalide.");
                             }
                         }
-                        break;
+                    }
 
-                    case 3:
+                    case 3 -> {
                         continuer = false;
                         System.out.println("Au revoir.");
-                        break;
+                    }
 
-                    default:
-                        System.out.println("Option invalide. Veuillez choisir une option valide.");
-                        break;
+                    default -> System.out.println("Option invalide. Veuillez choisir une option valide.");
                 }
             } catch (InputMismatchException e) {
                 System.out.println("Erreur : entrée invalide. Veuillez entrer un nombre entier.");
@@ -146,6 +170,7 @@ public class Main {
             }
         }
     }
+
 }
 
 // case 3:

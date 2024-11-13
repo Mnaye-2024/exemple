@@ -17,7 +17,7 @@ public class UserService {
     }
 
     public void create(User user) {
-        userRepository.insert(user);
+        userRepository.insert(user);    
     }
 
     public boolean updateClientForUser(User user) {

@@ -1,11 +1,12 @@
-package dette.boutique.core.database.impl;
+package dette.boutique.core.repository.impl;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-import dette.boutique.core.database.Repository;
+import dette.boutique.core.database.impl.DataBaseImpl;
+import dette.boutique.core.repository.Repository;
 
 public abstract class RepositoryDbImpl<T> extends DataBaseImpl<T> implements Repository<T> {
 

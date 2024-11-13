@@ -41,7 +41,7 @@ public class DetteService {
         }
 
         int montantVerse = saisirMontantVerse(montant);
-        Dette dette = new Dette(date, montant, montantVerse, client, details);
+        Dette dette = new Dette(montant, montantVerse, client, details);
         ajouterDetteAuClient(client, dette);
 
         System.out.println("Dette créée avec succès !");
@@ -84,7 +84,7 @@ public class DetteService {
     }
 
     private List<Details> saisirDétailsArticles() {
-        List<Details> détails = new ArrayList<>();
+        List<Details> details = new ArrayList<>();
         List<Article> tousArticles = articleService.list();
 
         while (true) {
@@ -94,13 +94,13 @@ public class DetteService {
             int quantité = saisirQuantitéArticle();
 
             Details détail = new Details(articleChoisi, quantité);
-            détails.add(détail);
+            details.add(détail);
 
             if (!demanderAjouterAutreArticle()) {
                 break;
             }
         }
-        return détails;
+        return details;
     }
 
     private void afficherListeArticles(List<Article> articles) {

@@ -4,53 +4,47 @@ import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper = false, of = { "client", "montantVerse" })
 @Entity
-@Table(name = "dette")
-public class Dette {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private int id;
+@Table(name = "dettes")
+public class Dette extends AbstractEntity {
 
-    @OneToOne
-    @JoinColumn(name = "client_id", nullable = false)
+    @ManyToOne
+    @JoinColumn(nullable = false)
     private Client client;
 
     @OneToMany(mappedBy = "dette")
     private List<Details> details;
 
-    @Column(nullable = false)
+    @Column(name = "montant-verse", nullable = false)
     private int montantVerse;
 
     @Column(nullable = false)
     private int montant;
 
-    @Column(nullable = false)
+    @Transient
     private int montantRestant;
 
     @Transient
     private static int newDette = 0;
 
-    @Column(nullable = false)
-    private String date;
+    // public Dette() {
+    // this.id = ++newDette;
+    // }
 
     public Dette() {
-        this.id = ++newDette;
     }
-
-    public Dette(String date, int montant, int montantVerse, Client client, List<Details> details) {
+    public Dette(int montant, int montantVerse, Client client, List<Details> details) {
         this.id = ++newDette;
-        this.date = date;
         this.montant = montant;
         this.montantVerse = montantVerse;
         this.montantRestant = montant - montantVerse;

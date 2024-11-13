@@ -28,26 +28,24 @@ public class ClientView extends ViewImpl<Client> {
             menu();
             int choix = obtenirChoixUtilisateur(1, 4);
             switch (choix) {
-                case 1:
-                    create();
-                    break;
-                case 2:
+                case 1 -> create();
+                case 2 -> {
                     List<Client> clients = clientService.list();
                     System.out.println("-----Liste des clients-----");
                     for (Client client : clients) {
                         System.out.println(client);
                     }
                     System.out.println("Fin de Liste");
-                    break;
-                case 3:
+                }
+                case 3 -> {
                     Client client = findClient();
                     System.out.println(client);
-                    break;
-                case 4:
+                }
+                case 4 -> {
                     System.out.println("Sortie du menu client.");
                     return;
-                default:
-                    System.out.println("Choix invalide. Veuillez réessayer.");
+                }
+                default -> System.out.println("Choix invalide. Veuillez réessayer.");
             }
         }
     }
@@ -193,7 +191,7 @@ public class ClientView extends ViewImpl<Client> {
         boolean isValide = false;
 
         while (!isValide) {
-            numero = scanner.nextLine().trim();
+            // numero = scanner.nextLine().trim();
             System.out.println("Veuillez saisir le numéro du client à rechercher:");
             numero = scanner.nextLine();
             if (clientService.findClient(numero) != null) {
@@ -203,7 +201,6 @@ public class ClientView extends ViewImpl<Client> {
                 break;
             } else {
                 System.out.println("Client non trouvé. Veuillez réessayer.");
-
             }
         }
         return client;

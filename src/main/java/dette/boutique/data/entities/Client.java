@@ -2,25 +2,24 @@ package dette.boutique.data.entities;
 
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
-import lombok.Data;;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;;
 
 @Data
+@EqualsAndHashCode(callSuper = false, of = { "nom", "prenom", "telephone" })
 @Entity
+@ToString(exclude = { "user", "dettes" })
 @Table(name = "client")
-public class Client {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private int id;
+public class Client extends AbstractEntity {
 
     @Column(length = 25, unique = true, nullable = false)
     private String telephone;
@@ -28,11 +27,11 @@ public class Client {
     @Column(length = 255, nullable = false)
     private String adresse;
 
-    @OneToOne
-    @JoinColumn(name = "user_id")
+    @OneToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    @JoinColumn(name = "user_id", nullable = true)
     private User user;
 
-    @OneToMany(mappedBy = "client")
+    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Dette> dettes;
 
     @Transient()
@@ -44,11 +43,13 @@ public class Client {
     @Column(nullable = false)
     private String prenom;
 
-    public Client() {
-        this.user = null;
-        this.id += increment;
-    }
+    // public Client() {
+    // this.user = null;
+    // this.id += increment;
+    // }
 
+    public Client() {
+    }
     public Client(String nom, String prenom, String adresse, String telephone) {
         this.id = ++increment;
         this.nom = nom;
@@ -58,14 +59,15 @@ public class Client {
         this.user = null;
     }
 
-    public Client(String nom, String prenom, String adresse, String telephone, User user) {
-        this.id = ++increment;
-        this.nom = nom;
-        this.prenom = prenom;
-        this.adresse = adresse;
-        this.telephone = telephone;
-        this.user = user;
-    }
+    // public Client(String nom, String prenom, String adresse, String telephone,
+    // User user) {
+    // this.id = ++increment;
+    // this.nom = nom;
+    // this.prenom = prenom;
+    // this.adresse = adresse;
+    // this.telephone = telephone;
+    // this.user = user;
+    // }
 
     public Client(int id, String nom, String prenom, String telephone, String adresse, User user) {
         this.id = id;
@@ -74,10 +76,5 @@ public class Client {
         this.adresse = adresse;
         this.telephone = telephone;
         this.user = user;
-    }
-
-    @Override
-    public String toString() {
-        return "Client[Nom=" + nom + ", Prénom=" + prenom + ", Adresse=" + adresse + ", Telephone=" + telephone + "]";
     }
 }

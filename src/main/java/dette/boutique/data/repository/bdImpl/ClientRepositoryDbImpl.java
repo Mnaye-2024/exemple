@@ -6,22 +6,26 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import dette.boutique.core.database.impl.RepositoryDbImpl;
+import dette.boutique.core.repository.impl.RepositoryDbImpl;
 import dette.boutique.data.entities.Client;
-import dette.boutique.data.entities.Role;
 import dette.boutique.data.entities.User;
 import dette.boutique.data.repository.ClientRepository;
-import dette.boutique.data.repository.UserRepository;
+import dette.boutique.data.repository.RoleRepository;
 
 public class ClientRepositoryDbImpl extends RepositoryDbImpl<Client> implements ClientRepository {
-    UserRepository userRepository;
+    RoleRepository roleRepository;
 
-    public ClientRepositoryDbImpl(UserRepository userRepository) {
+    public ClientRepositoryDbImpl(RoleRepository roleRepository) {
         this.tableName = "client";
-        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
     }
 
-    private final String INSERT_QUERY ="INSERT INTO client (nom, prenom, telephone, adresse, user_id) VALUES (?, ?, ?, ?, ?)";
+    public void setRoleRepository(RoleRepository roleRepository) {
+        this.tableName = "client";
+        this.roleRepository = roleRepository;
+    }
+
+    private final String INSERT_QUERY = "INSERT INTO client (nom, prenom, telephone, adresse, user_id) VALUES (?, ?, ?, ?, ?)";
     // private final String INSERT_WITHOUT_USER_QUERY = String
     // .format("INSERT INTO %S (nom, prenom, telephone, adresse) VALUES (?, ?, ?,
     // ?)", tableName);
@@ -108,7 +112,6 @@ public class ClientRepositoryDbImpl extends RepositoryDbImpl<Client> implements 
         try {
             connexion();
             this.init(SELECT_CLIENT_QUERY);
-
             ResultSet resultSet = ps.executeQuery();
             if (resultSet.next()) {
                 client = convertToObject(resultSet);
@@ -177,9 +180,21 @@ public class ClientRepositoryDbImpl extends RepositoryDbImpl<Client> implements 
                     resultSet.getString("user_prenom"),
                     resultSet.getString("user_login"),
                     resultSet.getString("user_password"),
-                    Role.findRoleByName(resultSet.getString("role_nom")));
+                    roleRepository.findRoleByName(resultSet.getString("role_nom")));
         }
 
+        return new Client(clientId, nomClient, prenomClient, telephone, adresse, user);
+    }
 
-        return new Client(clientId, nomClient, prenomClient, telephone, adresse, user);    }
+    @Override
+    public Client selectById(int id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'selectById'");
+    }
+
+    @Override
+    public void remove(Client element) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'remove'");
+    }
 }
